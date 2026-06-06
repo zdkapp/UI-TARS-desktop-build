@@ -28,12 +28,17 @@ jobs:
       - name: Build electron-build package first
         run: pnpm --filter @common/electron-build build
 
-      - name: Disable bytecode plugin for Node 20 compat
+      - name: Remove bytecodePlugin from config
+        shell: pwsh
         run: |
-          $config = "apps/ui-tars/electron.vite.config.ts"
-          (Get-Content $config) -replace ",?[\s]*bytecodePlugin\(\)[\s,]*", "" | Set-Content $config
-          (Get-Content $config) -replace "import.*bytecodePlugin.*from.*electron-vite.*;", "" | Set-Content $config
-          Get-Content $config | Select-String "bytecode"
+          $path = "apps/ui-tars/electron.vite.config.ts"
+          $content = Get-Content $path -Raw
+          $content = $content -replace "import {[^}]*bytecodePlugin[^}]*} from 'electron-vite'", "import { defineConfig, externalizeDepsPlugin } from 'electron-vite'"
+          $content = $content -replace "externalizeDepsPlugin\(\),[\s\n]*bytecodePlugin\(\)", "externalizeDepsPlugin()"
+          $content = $content -replace "bytecodePlugin\(\),?[\s\n]*", ""
+          Set-Content $path $content
+          Write-Output "=== Patched config ==="
+          Select-String -Path $path -Pattern "bytecode" -SimpleMatch
 
       - name: Build ui-tars app
         working-directory: apps/ui-tars
