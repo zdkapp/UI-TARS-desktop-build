@@ -35,17 +35,20 @@ jobs:
           ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
           NODE_OPTIONS: --max-old-space-size=8192
 
-      - name: Package app with electron-packager directly
+      - name: Copy node_modules and package as portable app
         working-directory: apps/ui-tars
         run: |
-          npx electron-packager . "UI TARS" --platform=win32 --arch=x64 --out=out --overwrite --icon=resources/icon --prune=true --ignore="node_modules/(?!@computer-use|sharp|jose)"
-        env:
-          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
-          NODE_OPTIONS: --max-old-space-size=8192
+          mkdir -p out/portable
+          Copy-Item -Recurse dist out/portable/
+          Copy-Item -Recurse node_modules out/portable/
+          Copy-Item package.json out/portable/
+          Copy-Item resources out/portable/ -Recurse -ErrorAction SilentlyContinue
+          Remove-Item out/portable/node_modules/.pnpm -Recurse -Force -ErrorAction SilentlyContinue
+          Compress-Archive -Path out/portable/* -DestinationPath out/UI-TARS-portable.zip
 
-      - name: Upload EXE
+      - name: Upload ZIP
         uses: actions/upload-artifact@v4
         with:
           name: UI-TARS-Windows-x64
-          path: apps/ui-tars/out/UI TARS-win32-x64/
+          path: apps/ui-tars/out/UI-TARS-portable.zip
           if-no-files-found: error
