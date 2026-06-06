@@ -27,12 +27,21 @@ jobs:
         working-directory: apps/ui-tars
         run: |
           pnpm run build:dist
-          npx electron-packager . "UI TARS" --platform=win32 --arch=x64 --out=out --overwrite --icon=resources/icon --prune=false
+          npx electron-packager . "UI TARS" --platform=win32 --arch=x64 --out=out --overwrite --icon=resources/icon --prune=true
         env:
           ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Create ZIP
+        run: |
+          cd apps/ui-tars/out
+          Compress-Archive -Path "UI TARS-win32-x64/*" -DestinationPath "UI-TARS-win32-x64.zip"
+      - name: Create Release and Upload
+        uses: softprops/action-gh-release@v2
         with:
-          name: UI-TARS-Win64
-          path: apps/ui-tars/out/UI TARS-win32-x64/
-          if-no-files-found: error
+          tag_name: v0.3.0-build-${{ github.run_number }}
+          name: UI-TARS Desktop v0.3.0 (Windows)
+          body: |
+            Windows 64-bit build of UI-TARS Desktop v0.3.0
+            
+            Download the ZIP, extract, and run UI-TARS.exe
+          files: apps/ui-tars/out/UI-TARS-win32-x64.zip
+          draft: true
