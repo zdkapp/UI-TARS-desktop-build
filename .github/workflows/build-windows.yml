@@ -2,9 +2,6 @@ name: Build Windows EXE
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - master
 
 env:
   CI: true
@@ -24,15 +21,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
 
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+      - name: Install dependencies (skip prepare scripts)
+        run: pnpm install --no-frozen-lockfile --ignore-scripts
 
-      - name: Build dependencies first
-        run: pnpm run build:deps
+      - name: Build electron-build package first
+        run: pnpm --filter @common/electron-build build
 
-      - name: Build Windows EXE
+      - name: Build ui-tars app
         working-directory: apps/ui-tars
         run: |
           pnpm run build:dist
@@ -40,12 +36,11 @@ jobs:
         env:
           ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
           ELECTRON_CACHE: .electron-cache
+          NODE_OPTIONS: --max-old-space-size=8192
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
           name: UI-TARS-Windows-x64
-          path: |
-            apps/ui-tars/out/make/**/*.exe
-            apps/ui-tars/out/make/**/*.msi
+          path: apps/ui-tars/out/make/**/*.exe
           if-no-files-found: warn
