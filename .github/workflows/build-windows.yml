@@ -23,14 +23,14 @@ jobs:
         run: pnpm install --no-frozen-lockfile --ignore-scripts
       - name: Build workspace packages
         run: pnpm -r --filter '!ui-tars-desktop' build
-      - name: Build app
+      - name: Build and package
         working-directory: apps/ui-tars
         run: |
           pnpm run build:dist
-          npx electron-packager . "UI TARS" --platform=win32 --arch=x64 --out=out --overwrite --icon=resources/icon --prune=true
+          npx electron-packager . "UI TARS" --platform=win32 --arch=x64 --out=out --overwrite --icon=resources/icon --prune=false
         env:
           ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
-      - name: Upload app as artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: UI-TARS-Win64
