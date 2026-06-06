@@ -39,9 +39,6 @@ export default defineConfig({
       },
     },
     plugins: [
-        chunkAlias: 'app_private',
-        protectedStrings: [process.env.UI_TARS_APP_PRIVATE_KEY_BASE64!],
-      }),
       tsconfigPaths(),
       externalizeDepsPlugin({
         include: [...getExternalPkgs()],
