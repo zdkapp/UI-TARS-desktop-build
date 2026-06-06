@@ -26,16 +26,7 @@ jobs:
         run: pnpm install --no-frozen-lockfile --ignore-scripts
 
       - name: Build all workspace packages
-        run: |
-          pnpm --filter @common/electron-build build
-          pnpm --filter @ui-tars/electron-ipc build
-          pnpm --filter @ui-tars/shared build
-          pnpm --filter @ui-tars/utio build
-          pnpm --filter @ui-tars/sdk build
-          pnpm --filter @ui-tars/operator-browser build
-          pnpm --filter @ui-tars/operator-nut-js build
-          pnpm --filter @ui-tars/action-parser build
-          pnpm --filter @ui-tars/visualizer build
+        run: pnpm -r build
 
       - name: Build and package app
         working-directory: apps/ui-tars
