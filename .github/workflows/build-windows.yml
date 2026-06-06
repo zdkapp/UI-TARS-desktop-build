@@ -25,16 +25,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile --ignore-scripts
 
-      - name: Build all workspace packages
-        run: pnpm run -r --filter='./packages/*' build
-
-      - name: Build common packages
-        run: pnpm --filter @common/electron-build build
-
-      - name: Build and package
-        shell: pwsh
+      - name: Build required workspace packages
         run: |
-          cd apps/ui-tars
+          pnpm --filter @ui-tars/electron-ipc build
+          pnpm --filter @ui-tars/shared build
+          pnpm --filter @ui-tars/utio build
+          pnpm --filter @common/electron-build build
+
+      - name: Build and package app
+        working-directory: apps/ui-tars
+        run: |
           pnpm run build:dist
           pnpm run make
         env:
