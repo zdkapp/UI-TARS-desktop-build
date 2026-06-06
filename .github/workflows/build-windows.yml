@@ -28,6 +28,13 @@ jobs:
       - name: Build electron-build package first
         run: pnpm --filter @common/electron-build build
 
+      - name: Disable bytecode plugin for Node 20 compat
+        run: |
+          $config = "apps/ui-tars/electron.vite.config.ts"
+          (Get-Content $config) -replace ",?[\s]*bytecodePlugin\(\)[\s,]*", "" | Set-Content $config
+          (Get-Content $config) -replace "import.*bytecodePlugin.*from.*electron-vite.*;", "" | Set-Content $config
+          Get-Content $config | Select-String "bytecode"
+
       - name: Build ui-tars app
         working-directory: apps/ui-tars
         run: |
