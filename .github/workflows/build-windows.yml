@@ -3,6 +3,9 @@ name: Build Windows EXE
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 env:
   CI: true
   NODE_OPTIONS: --max-old-space-size=8192
@@ -27,21 +30,21 @@ jobs:
         working-directory: apps/ui-tars
         run: |
           pnpm run build:dist
-          npx electron-packager . "UI TARS" --platform=win32 --arch=x64 --out=out --overwrite --icon=resources/icon --prune=true
+          npx electron-packager . "UI TARS" --platform=win32 --arch=x64 --out=out --overwrite --icon=resources/icon --prune=false
         env:
           ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
       - name: Create ZIP
         run: |
           cd apps/ui-tars/out
           Compress-Archive -Path "UI TARS-win32-x64/*" -DestinationPath "UI-TARS-win32-x64.zip"
-      - name: Create Release and Upload
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v0.3.0-build-${{ github.run_number }}
           name: UI-TARS Desktop v0.3.0 (Windows)
-          body: |
-            Windows 64-bit build of UI-TARS Desktop v0.3.0
-            
-            Download the ZIP, extract, and run UI-TARS.exe
+          body: Windows 64-bit build. Download ZIP, extract, run UI-TARS.exe
           files: apps/ui-tars/out/UI-TARS-win32-x64.zip
-          draft: true
+          draft: false
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
