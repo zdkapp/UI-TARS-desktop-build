@@ -22,25 +22,13 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install dependencies (skip prepare scripts)
+      - name: Install dependencies
         run: pnpm install --no-frozen-lockfile --ignore-scripts
 
-      - name: Build electron-build package first
+      - name: Build common packages
         run: pnpm --filter @common/electron-build build
 
-      - name: Remove bytecodePlugin from config
-        shell: pwsh
-        run: |
-          $path = "apps/ui-tars/electron.vite.config.ts"
-          $content = Get-Content $path -Raw
-          $content = $content -replace "import {[^}]*bytecodePlugin[^}]*} from 'electron-vite'", "import { defineConfig, externalizeDepsPlugin } from 'electron-vite'"
-          $content = $content -replace "externalizeDepsPlugin\(\),[\s\n]*bytecodePlugin\(\)", "externalizeDepsPlugin()"
-          $content = $content -replace "bytecodePlugin\(\),?[\s\n]*", ""
-          Set-Content $path $content
-          Write-Output "=== Patched config ==="
-          Select-String -Path $path -Pattern "bytecode" -SimpleMatch
-
-      - name: Build ui-tars app
+      - name: Build and package
         working-directory: apps/ui-tars
         run: |
           pnpm run build:dist
