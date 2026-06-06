@@ -28,19 +28,24 @@ jobs:
       - name: Build all workspace packages (exclude app)
         run: pnpm -r --filter '!ui-tars-desktop' build
 
-      - name: Build and package app
+      - name: Build app (electron-vite)
         working-directory: apps/ui-tars
-        run: |
-          pnpm run build:dist
-          pnpm run make
+        run: pnpm run build:dist
         env:
           ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
-          ELECTRON_CACHE: .electron-cache
+          NODE_OPTIONS: --max-old-space-size=8192
+
+      - name: Package app with electron-packager directly
+        working-directory: apps/ui-tars
+        run: |
+          npx electron-packager . "UI TARS" --platform=win32 --arch=x64 --out=out --overwrite --icon=resources/icon --prune=true --ignore="node_modules/(?!@computer-use|sharp|jose)"
+        env:
+          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
           NODE_OPTIONS: --max-old-space-size=8192
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
           name: UI-TARS-Windows-x64
-          path: apps/ui-tars/out/make/**/*.exe
-          if-no-files-found: warn
+          path: apps/ui-tars/out/UI TARS-win32-x64/
+          if-no-files-found: error
